@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,27 +21,36 @@ namespace CodeChallenge.Controllers
             try
             {
                 // Validate input
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                //if (!ModelState.IsValid)
+                //{
+                //    return BadRequest(ModelState);
+                //}
 
                 // Remove white spaces
-                var onlyText = data.Text.Replace(" ", "");
+                var onlyText = data.Text.Replace(" ", "").ToLower();
 
                 // Count words
                 var wordCount = data.Text.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length;
                                 
-                // Remove numbers
-                var onlyCharacters = Regex.Replace(onlyText, @"[\d-]", string.Empty);
+                // Get only letters
+                var onlyCharacters = Regex.Replace(onlyText, @"[^A-Za-z]+", string.Empty);
 
                 // Count characters
                 var characterCount = onlyCharacters.OrderBy(c => c).GroupBy(c => c).ToDictionary(g => g.Key, g => g.Count());
-                
+
+                dynamic output = new List<dynamic>();
+
+                foreach (var item in characterCount)
+                {
+                    var row = new ExpandoObject() as IDictionary<string, object>;
+                    row.Add(item.Key.ToString(), item.Value);
+                    output.Add(row);
+                }
+
                 var result = new {
                     textLength = new { withSpaces = data.Text.Length, withoutSpaces = onlyText.Length},
                     wordCount,
-                    characterCount = JsonConvert.SerializeObject(characterCount)
+                    characterCount = output
                 };
 
                 return Ok(result);

@@ -8,7 +8,7 @@ namespace CodeChallenge.DTOs
 {
     public class AnalyzeData
     {
-        [Required]
+        //[Required]
         public string Text { get; set; }
     }
 }
